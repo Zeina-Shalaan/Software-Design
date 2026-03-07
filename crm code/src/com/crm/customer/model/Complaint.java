@@ -12,10 +12,17 @@ public class Complaint {
     private LocalDateTime createdAt;
     private Employee assignedTo;
 
+<<<<<<< Updated upstream
     public Complaint(String complaintId, String priority, LocalDateTime slaDeadline) {
         this.complaintId = complaintId;
         this.priority = priority;
         this.slaDeadline = slaDeadline;
+=======
+    public Complaint(String complaintId, String priority) {
+        this.complaintId = complaintId;
+        this.priority = priority;
+        this.slaDeadline = LocalDateTime.now().plusHours(24);;
+>>>>>>> Stashed changes
         this.status = ComplaintStatus.Open;
         this.createdAt = LocalDateTime.now();
     }
@@ -48,4 +55,18 @@ public class Complaint {
     public boolean isSlaBreached() {
         return slaDeadline != null && LocalDateTime.now().isAfter(slaDeadline) && status != ComplaintStatus.Resolved;
     }
+<<<<<<< Updated upstream
+=======
+    public void  ComplaintDetails()
+    {
+        System.out.println("Complaint Details:");
+        System.out.println("ComplaintId: " + complaintId);
+        System.out.println("Priority: " + priority);
+        System.out.println("SlaDeadline: " + slaDeadline);
+        System.out.println("CreatedAt: " + createdAt);
+        System.out.println("AssignedTo: " + assignedTo.getName());
+        System.out.println("Status: " + status);
+
+    }
+>>>>>>> Stashed changes
 }

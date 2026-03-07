@@ -15,10 +15,18 @@ public class PaymentController {
     }
 
     public void processPayment(PaymentTransaction paymentTransaction) {
+<<<<<<< Updated upstream
         paymentRepository.save(paymentTransaction);
     }
 
     public void createRefund(Refund refund) {
         refundRepository.save(refund);
+=======
+        paymentRepository.save(paymentTransaction.getPaymentId(), paymentTransaction);
+    }
+
+    public void createRefund(Refund refund) {
+        refundRepository.save(refund.getRefundId(), refund);
+>>>>>>> Stashed changes
     }
 }

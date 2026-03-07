@@ -24,4 +24,18 @@ public class Employee {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+<<<<<<< Updated upstream
 }
+=======
+
+    public void getDetails()
+    {
+        System.out.println("Employee details:");
+        System.out.println("Employee ID: " + employeeId);
+        System.out.println("Name: " + name);
+        System.out.println("Role: " + role);
+    }
+}
+
+
+>>>>>>> Stashed changes

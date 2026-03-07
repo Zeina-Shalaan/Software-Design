@@ -16,6 +16,10 @@ public abstract class SystemAlert {
         this.resolved = false;
     }
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     public String getAlertId() { return alertId; }
     public AlertSeverity getSeverity() { return severity; }
     public LocalDateTime getCreatedAt() { return createdAt; }

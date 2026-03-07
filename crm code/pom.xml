@@ -4,7 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.crm</groupId>
+<<<<<<< Updated upstream
     <artifactId>crm-system-prof</artifactId>
+=======
+    <artifactId>crm-code</artifactId>
+>>>>>>> Stashed changes
     <version>1.0.0</version>
 
     <properties>
@@ -15,6 +19,10 @@
 
     <build>
         <!-- Your code is in /src, not Maven's default /src/main/java -->
+<<<<<<< Updated upstream
         <sourceDirectory>crm-system-prof/Crm/src</sourceDirectory>
+=======
+        <sourceDirectory>src</sourceDirectory>
+>>>>>>> Stashed changes
     </build>
 </project>

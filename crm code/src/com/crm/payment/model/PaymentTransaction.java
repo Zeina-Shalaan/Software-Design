@@ -22,6 +22,7 @@ public class PaymentTransaction {
         this.transactionDate = LocalDateTime.now();
     }
 
+<<<<<<< Updated upstream
     public String getPaymentId() { return paymentId; }
     public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
 
@@ -37,6 +38,47 @@ public class PaymentTransaction {
     public PaymentStatus getStatus() { return status; }
 
     public LocalDateTime getTransactionDate() { return transactionDate; }
+=======
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public Money getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Money amount) {
+        this.amount = amount;
+    }
+
+    public PaymentMethodType getMethod() {
+        return method;
+    }
+
+    public void setMethod(PaymentMethodType method) {
+        this.method = method;
+    }
+
+    public PaymentStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getTransactionDate() {
+        return transactionDate;
+    }
+>>>>>>> Stashed changes
 
     public boolean validatePayment() {
         return amount != null && amount.getAmount() > 0;

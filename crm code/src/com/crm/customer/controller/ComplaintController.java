@@ -11,7 +11,11 @@ public class ComplaintController {
     }
 
     public void createComplaint(Complaint complaint) {
+<<<<<<< Updated upstream
         complaintRepository.save(complaint);
+=======
+        complaintRepository.save(complaint.getComplaintId(), complaint);
+>>>>>>> Stashed changes
     }
 
     public Complaint getComplaint(String complaintId) {
@@ -19,7 +23,11 @@ public class ComplaintController {
     }
 
     public void updateComplaint(Complaint complaint) {
+<<<<<<< Updated upstream
         complaintRepository.update(complaint);
+=======
+        complaintRepository.update(complaint.getComplaintId(), complaint);
+>>>>>>> Stashed changes
     }
 
     public void deleteComplaint(String complaintId) {
