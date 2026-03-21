@@ -88,49 +88,81 @@ crm-code/
 ### 2. Structural Patterns
 *   **Decorator (`LoggingAlertDecorator`, `RetryAlertDecorator`, `EscalatingAlertDecorator`, `AlertingDeliveryDecorator`)**: Dynamically adds behavior like logging, notifications, and automated retries to existing objects without creating a complex hierarchy of subclasses.
 
-    #### **Case Study: Cross-Cutting Behavior for SystemAlert**
+    #### **Case Study 1: Cross-Cutting Behavior for SystemAlert**
     
     **The Problem (Before Decorator)**
-    The CRM needed to add "cross-cutting" behaviors—like **Logging**, **Retrying**, and **Escalation**—to various alert types (`LowStockAlert`, `SlaBreachAlert`). 
-    
-    If we used standard **Inheritance**, we would face a "Class Explosion": 
-    * To have a logged *and* retried LowStockAlert, we'd need `LoggingRetryingLowStockAlert`. 
-    * We would need similar combinations for every other alert type, leading to hundreds of redundant classes. 
-    * Static inheritance prevents us from adding behaviors dynamically at runtime based on specific conditions.
+    The CRM needed to add "cross-cutting" behaviors like **Logging** and **Retrying** to various alert types (`LowStockAlert`, `SlaBreachAlert`). Using standard inheritance would lead to a "Class Explosion" of redundant subclasses.
     
     **The Solution (After Decorator)**
-    By using the **Decorator Pattern**, we decoupled the core alert logic from its optional behaviors:
-    *   **Dynamic Stacking**: We can now "wrap" any alert with any combination of behaviors at runtime (e.g., `new LoggingAlertDecorator(new RetryAlertDecorator(new SlaBreachAlert()))`).
-    *   **Single Responsibility**: Each decorator handles exactly one concern (only logging, only retrying, etc.), making the code modular and easy to maintain.
-    *   **Clean Core**: Core alerts like `LowStockAlert` remain simple and focused only on their specific data.
+    *   **Delegation**: Each decorator handles its specific logic then delegates the notification to the wrapped alert.
+    *   **Flexible Composition**: We can mix and match behaviors at runtime (e.g., `new LoggingAlertDecorator(new RetryAlertDecorator(alert))`).
+    *   **Clean Core**: Core alerts remain simple and focused only on their specific data.
+
+    #### **Case Study 2: Delivery Status Tracking**
+    
+    **The Problem (Before Decorator)**
+    A standard `Delivery` object only tracks the state of an order. If we wanted to automatically trigger a `DeliveryDelayAlert` when a shipment is delayed, we would have been forced to modify the core `Delivery` class.
+    
+    **The Solution (After Decorator)**
+    *   **Separation of Concerns**: The `AlertingDeliveryDecorator` adds alerting logic while the original `Delivery` class remains responsible only for state.
+    *   **Dynamic Behavior**: We can choose to wrap only high-priority deliveries with alerting features at runtime.
+    *   **Extensibility**: New behaviors (like logging delivery history) can be added as new decorators without touching existing code.
 
 *   **Adapter (`ErpSupplierAdapter`, `StripePaymentAdapter`)**: Allows the CRM to communicate with external systems (ERP and Payment Gateways) by translating incompatible interfaces into a standardized internal format.
 
-    #### **Case Study: External Payment Gateway (Stripe Adapter)**
+    #### **Case Study 1: External Payment Gateway (Stripe Adapter)**
     
     **The Problem (Before Adapter)**
-    The CRM's internal payment system was designed to work with a standardized `PaymentProcessor` interface that:
-    1.  Accepts a custom `Money` object (containing both amount and currency).
-    2.  Provides a generic `processPayment` method.
-    
-    However, we needed to integrate **Stripe**, a popular external payment gateway. Stripe's proprietary client library (`StripeClient`) has a completely different signature:
-    *   It requires the amount to be passed as a `double` representing **cents** (e.g., $10.50 must be sent as `1050`).
-    *   It requires the currency as a separate `String` code.
-    *   Its method is named `charge()`, which doesn't match our internal `processPayment()` naming convention.
-    
-    **Without the Adapter**, we would have been forced to tightly couple our core CRM logic to Stripe's specific API, making it difficult to switch providers and violating the **Open/Closed Principle**.
+    Stripe's API expects amounts in **cents** and currency as separate **Strings**. The CRM uses a unified `Money` object and a `processPayment()` method.
     
     **The Solution (After Adapter)**
-    By implementing the `StripePaymentAdapter`, we successfully bridged these two incompatible interfaces:
-    *   **Interface Mapping**: The adapter implements the CRM's `PaymentProcessor` while wrapping the `StripeClient`.
-    *   **Data Transformation**: The adapter automatically converts the `Money` object into cents and extracts the currency code.
-    *   **Decoupling**: The CRM continues to call `processPayment(money)` generically, completely unaware that it is communicating with Stripe.
+    *   **Interface Mapping**: The adapter implements our `PaymentProcessor` interface while wrapping the `StripeClient`.
+    *   **Data Transformation**: The adapter automatically handles the conversion from `Money` objects to cents and currency codes.
+    *   **Decoupling**: The CRM logic remains identical whether we use Stripe or an internal manual processor.
 
-*   **Bridge (`Report`/`Renderer`)**: Decouples the report type (e.g., `OrderReport`) from how it is displayed (e.g., `CsvReportRenderer`).
+    #### **Case Study 2: ERP System Integration (Supplier Adapter)**
+    
+    **The Problem (Before Adapter)**
+    Our external ERP returns data as raw `String[]` arrays and uses different nomenclature. Directly using this in the CRM would spread ERP-specific logic throughout the codebase.
+    
+    **The Solution (After Adapter)**
+    *   **Translation**: The `ErpSupplierAdapter` maps raw ERP arrays into domain-driven `Supplier` and `PurchaseOrder` objects.
+    *   **API Harmonization**: The adapter maps ERP methods like `getErpSupplierData()` to the CRM's `fetchSupplier()` interface.
+    *   **Robustness**: If the ERP schema changes, we only need to update the adapter, leaving the CRM's business logic intact.
+
+
+*   **Bridge (`Report`/`Renderer`, `Notification`/`Channel`)**: Decouples abstraction from implementation, allowing two independent hierarchies to evolve separately without a "Combinatorial Explosion" of classes.
+
+    #### **Case Study 1: Report Generation and Formatting**
+    
+    **The Problem (Before Bridge)**
+    The reporting system was tightly coupled with its output format:
+    *   To create an `OrderReport` in both Console and CSV formats, we would have needed separate subclasses: `ConsoleOrderReport` and `CsvOrderReport`.
+    *   Adding a new report (e.g., `InventoryReport`) or a new format (e.g., `PdfRenderer`) would cause the classes to grow exponentially (**M reports × N formats**).
+    
+    **The Solution (After Bridge)**
+    We separated the **what** (Report data) from the **how** (Renderer format):
+    *   **Delegation**: The `Report` class no longer handles formatting and instead delegates to its assigned `ReportRenderer`.
+    *   **Flexible Composition**: We can now mix any report type with any renderer at runtime.
+    *   **Reduced Complexity**: We eliminated format-specific subclasses, keeping the codebase clean and manageable.
+
+    #### **Case Study 2: Decoupling Notification from CommunicationChannel**
+    
+    **The Problem (Before Bridge)**
+    The CRM's notification system was highly rigid:
+    *   `ChatNotification`, `EmailNotification`, and `SmsNotification` had their "send" logic hard-coded inside them.
+    *   This meant that the **message content** was tightly coupled with the **delivery channel**.
+    *   **Combinatorial Explosion**: Adding a new "MarketingNotification" that could be sent via both Email and SMS would require creating multiple redundant subclasses.
+    
+    **The Solution (After Bridge)**
+    We decoupled the `Notification` abstraction from its `CommunicationChannel` implementation:
+    *   **Delegation**: The `send()` method no longer contains delivery logic and instead delegates to its assigned channel.
+    *   **Flexible Composition**: We can now mix any notification type with any channel at runtime.
+    *   **Factory Wiring**: Factories inject the matching channel into the notification at the moment of creation.
+
+
 
 ---
-
-
 
 ## Expected Output Test Suites
 The system executes a unified test suite in `Main.java` demonstrating:
