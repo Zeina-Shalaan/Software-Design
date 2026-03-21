@@ -2,8 +2,6 @@
 
 ## Overview
 
-This deliverable demonstrates the implementation of core and advanced **Gang of Four (GoF) Design Patterns** within a robust CRM (Customer Relationship Management) system:
-
 | # | Pattern | Category | Where Used |
 |---|---------|----------|------------|
 | 1 | **Singleton** | Creational | `DatabaseConnectionManager` |
@@ -14,7 +12,7 @@ This deliverable demonstrates the implementation of core and advanced **Gang of 
 | 6 | **Bridge** | Structural | `Report`/`Renderer` separation, `ChannelNotification` |
 | 7 | **Flyweight** | Creational | `ProductFactory` (managing shared Product objects) |
 
-All patterns are integrated into a layered architecture using **Controllers**, **Repositories**, and **Models** to ensure **SOLID** compliance.
+All patterns are integrated into a layered architecture using **Controllers**, **Repositories**, and **Models**.
 
 ---
 
