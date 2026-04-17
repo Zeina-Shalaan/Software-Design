@@ -7,7 +7,7 @@ import com.crm.inventory.event.StockChangedEvent;
 import com.crm.inventory.event.StockObserver;
 
 //Listener
-public class InventoryAlertController extends AlertController implements StockObserver {
+public class InventoryAlertController extends AlertController {
 
     public InventoryAlertController(AlertRepository alertRepository) {
         super(alertRepository, new LowStockAlertFactory());
@@ -21,12 +21,4 @@ public class InventoryAlertController extends AlertController implements StockOb
         return alert;
     }
 
-    @Override
-    public void onStockChanged(StockChangedEvent event) {
-        System.out.println("Stock change detected for product '"
-                + event.getProductId() + "' → new quantity: " + event.getNewQuantity()
-                + ". Creating low-stock alert.");
-        String alertId = "ALT-AUTO-" + event.getProductId() + "-" + System.currentTimeMillis();
-        processAlert(alertId, event.getProductId()).notifyTarget();
-    }
 }

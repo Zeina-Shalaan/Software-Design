@@ -9,7 +9,7 @@ import com.crm.inventory.repository.SupplierRepository;
 import com.crm.inventory.service.SupplierDataService;
 
 // concrete Observer/subscriber 
-public class SupplierController implements StockObserver {
+public class SupplierController {
 
     private final SupplierRepository supplierRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
@@ -129,24 +129,12 @@ public class SupplierController implements StockObserver {
         return true;
     }
 
-    // StockObserver — automatic auto-reorder on stock-change events
-    @Override
-    public void onStockChanged(StockChangedEvent event) {
-        if (event.getNewQuantity() <= 0) {
-            String poId = "PO-AUTO-" + event.getProductId() + "-" + System.currentTimeMillis();
-
-            PurchaseOrder autoPo = new PurchaseOrder(
-                    poId, event.getSupplierId(), event.getProductId(), 50,
-                    event.getUnitPrice().multiply(50));
-
-            if (purchaseOrderRepository != null) {
-                purchaseOrderRepository.save(poId, autoPo);
-                System.out.println("Auto-reorder PO '" + poId + "' created for product '"
-                        + event.getProductId() + "' (supplier: " + event.getSupplierId() + ").");
-            } else {
-                System.out.println("Auto-reorder PO '" + poId + "' created for product '"
-                        + event.getProductId() + "' (supplier: " + event.getSupplierId() + ", not persisted).");
-            }
+    public void pushPurchaseOrder(PurchaseOrder po) {
+        if (!isErpAvailable()) {
+            System.out.println("Cannot push PO — ERP not available.");
+            return;
         }
+        supplierDataService.pushPurchaseOrder(po);
+        System.out.println("PO " + po.getPurchaseOrderId() + " pushed from CRM to ERP.");
     }
 }

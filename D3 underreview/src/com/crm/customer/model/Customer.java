@@ -11,6 +11,11 @@ public class Customer {
     private CustomerStatus status;
     private LocalDateTime createdAt;
 
+    // Fields for segmentation strategies
+    private double totalSpending;
+    private LocalDateTime lastActivityDate;
+    private String region;
+
     public Customer(String customerId, String name, String email, String phone) {
         this.customerId = customerId;
         this.name = name;
@@ -18,6 +23,9 @@ public class Customer {
         this.phone = phone;
         this.status = CustomerStatus.Active;
         this.createdAt = LocalDateTime.now();
+        this.totalSpending = 0.0;
+        this.lastActivityDate = LocalDateTime.now();
+        this.region = "Unknown";
     }
 
     public String getCustomerId() { return customerId; }
@@ -46,4 +54,13 @@ public class Customer {
     public void changeStatus(CustomerStatus status) {
         this.status = status;
     }
+
+    public double getTotalSpending() { return totalSpending; }
+    public void setTotalSpending(double totalSpending) { this.totalSpending = totalSpending; }
+
+    public LocalDateTime getLastActivityDate() { return lastActivityDate; }
+    public void setLastActivityDate(LocalDateTime lastActivityDate) { this.lastActivityDate = lastActivityDate; }
+
+    public String getRegion() { return region; }
+    public void setRegion(String region) { this.region = region; }
 }
