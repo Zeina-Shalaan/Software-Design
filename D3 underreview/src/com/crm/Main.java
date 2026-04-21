@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class Main {
         private static Customer sharedCustomer;
@@ -145,27 +146,28 @@ public class Main {
                 System.out.println("[Main] Seeding sample data across all repositories...");
 
                 // ========== CUSTOMERS ==========
-                Customer customer1 = new Customer("CUST-001", 
-                "Ahmed Samy", "ahmed.samy@example.com", "01012345678",
-                2800, LocalDateTime.now().minusDays(21), 
-                "Cairo", CustomerStatus.Active);
+                Customer customer1 = new Customer("CUST-001",
+                                "Ahmed Samy", "ahmed.samy@example.com", "01012345678",
+                                2800, LocalDateTime.now().minusDays(21), "Cairo", CustomerStatus.Active);
 
                 Customer customer2 = new Customer("CUST-002", "Manar Yousry", "manar.yous@test.com", "01098765432",
-                1500, LocalDateTime.now().minusDays(80), "Alexandria", CustomerStatus.Active);
-                Customer customer3 = new Customer("CUST-003", "Hossam Hassan", "hossam.hassan@test.com", "01123456789",
-                3200, LocalDateTime.now(), "Cairo", CustomerStatus.Active);
-                Customer customer4 = new Customer("CUST-004", "Mohamed Ali", "mohamed.ali@test.com", "01234567890",
-                900, LocalDateTime.now(), "Cairo", CustomerStatus.Active);
-                Customer customer5 = new Customer("CUST-005", "Carol Magdy", "carol.magdy@test.com", "01523456764",
-                2100, LocalDateTime.now().minusDays(40), "Cairo", CustomerStatus.Active);
+                                1500, LocalDateTime.now().minusDays(80), "Alexandria", CustomerStatus.Active);
 
+                Customer customer3 = new Customer("CUST-003", "Hossam Hassan", "hossam.hassan@test.com", "01123456789",
+                                3200, LocalDateTime.now(), "Cairo", CustomerStatus.Active);
+
+                Customer customer4 = new Customer("CUST-004", "Mohamed Ali", "mohamed.ali@test.com", "01234567890",
+                                900, LocalDateTime.now(), "Cairo", CustomerStatus.Active);
+
+                Customer customer5 = new Customer("CUST-005", "Carol Magdy", "carol.magdy@test.com", "01523456764",
+                                2100, LocalDateTime.now().minusDays(40), "Cairo", CustomerStatus.Active);
 
                 customer1.setRegion("Cairo");
                 customer2.setRegion("Alexandria");
                 customer3.setRegion("Alexandria");
                 customer4.setRegion("Cairo");
                 customer5.setRegion("Cairo");
-                
+
                 customerController.createCustomer(customer1.getCustomerId(), customer1);
                 customerController.createCustomer(customer2.getCustomerId(), customer2);
                 customerController.createCustomer(customer3.getCustomerId(), customer3);
@@ -246,6 +248,7 @@ public class Main {
                 supplierController.createSupplier(supplier1);
                 supplierController.createSupplier(supplier2);
                 supplierController.createSupplier(supplier3);
+
                 System.out.println("  - Created 3 suppliers");
 
                 // ========== PURCHASE ORDERS ==========
@@ -320,6 +323,7 @@ public class Main {
                 paymentRepository.save(payment5.getPaymentId(), payment5);
                 orderController.attachPayment("ORD-005", payment5);
                 orderController.updateStatus("ORD-005", com.crm.common.enums.OrderStatus.Dispatched);
+
                 System.out.println("  - Created 5 payment transactions");
 
                 // ========== COMPLAINTS ==========
@@ -337,6 +341,7 @@ public class Main {
                 knownComplaintIds.add(complaint2.getComplaintId());
                 knownComplaintIds.add(complaint3.getComplaintId());
                 knownComplaintIds.add(complaint4.getComplaintId());
+
                 System.out.println("  - Created 4 complaints");
 
                 // ========== ALERTS ==========
@@ -347,20 +352,23 @@ public class Main {
                 knownAlertIds.add(lowStockAlert1.getAlertId());
                 knownAlertIds.add(lowStockAlert2.getAlertId());
                 knownAlertIds.add(slaAlert.getAlertId());
+
                 System.out.println("  - Created 3 alerts");
 
-                System.out.println("[Main] Sample data seeding complete!\n");
+                System.out.println("====================\n");
+                System.out.println("Sample data seeding complete!\n");
         }
 
+        // ==================== Main menu ====================
         private static void runInteractiveConsole() {
                 boolean running = true;
                 while (running) {
-                        System.out.println("\n==================== CRM CONSOLE TEST LAYER ====================");
+                        System.out.println("\n==================== CRM MAIN MENU ====================");
                         System.out.println("1) Customer Support View");
                         System.out.println("2) Inventory Subsystem View");
                         System.out.println("3) Orders & Payments");
                         System.out.println("4) Reports");
-                        System.out.println("5) Run Full Demo Suite");
+                        System.out.println("5) Run Full Demo");
                         System.out.println("0) Exit");
 
                         int choice = readInt("Select an option: ");
@@ -377,6 +385,24 @@ public class Main {
                 System.out.println("Shutting down CRM console.");
         }
 
+        // ==================== Common functions ====================
+        private static void showKnownAlerts() {
+                if (knownAlertIds.isEmpty()) {
+                        System.out.println("No alerts recorded in this session.");
+                        return;
+                }
+                System.out.println("Alerts:");
+                for (String alertId : knownAlertIds) {
+                        SystemAlert a = alertRepository.findById(alertId);
+                        if (a == null) {
+                                continue;
+                        }
+                        System.out.println("- " + a.getAlertId() + " | Severity: " + a.getSeverity() + " | Resolved: "
+                                        + a.isResolved() + " | CreatedAt: " + a.getFormattedCreatedAt());
+                }
+        }
+
+        // ==================== Customer ====================
         private static void customerSupportMenu() {
                 boolean running = true;
                 while (running) {
@@ -407,8 +433,7 @@ public class Main {
                                 default -> System.out.println("Invalid option.");
                         }
                 }
-        }                              
-
+        }
 
         private static void supportSearchCustomer() {
                 String customerId = readString("Enter Customer ID: ");
@@ -545,7 +570,7 @@ public class Main {
 
                 switch (choice) {
                         case 1 -> {
-                                String region = readString("Enter target region (e.g., Cairo, Alexandria): ");
+                                String region = readString("Enter target region (Cairo, Alexandria ...): ");
                                 policy = new GeographicSegmentation(region);
                                 policyName = "Geographic (Region: " + region + ")";
                         }
@@ -590,7 +615,8 @@ public class Main {
                 SystemAlert decoratedSla = new RetryingAlert(
                                 new EscalatingAlert(
                                                 new LoggedAlert(
-                                                                slaBreachAlertController.processAlert(alertId, complaintId))),
+                                                                slaBreachAlertController.processAlert(alertId,
+                                                                                complaintId))),
                                 3);
                 knownAlertIds.add(decoratedSla.getAlertId());
                 System.out.println("Triggering decorated alert notification...");
@@ -598,6 +624,7 @@ public class Main {
                 System.out.println("Decorated SLA alert created and triggered successfully.");
         }
 
+        // ==================== Inventory ====================
         private static void inventoryMenu() {
                 boolean running = true;
                 while (running) {
@@ -663,6 +690,40 @@ public class Main {
                 }
         }
 
+        private static void inventoryViewAllPurchaseOrders() {
+                Collection<PurchaseOrder> pos = purchaseOrderRepository.findAll();
+                if (pos.isEmpty()) {
+                        System.out.println("No purchase orders found.");
+                        return;
+                }
+                System.out.println("\n--- All Purchase Orders ---");
+                for (PurchaseOrder po : pos) {
+                        System.out.println("- PO ID: " + po.getPurchaseOrderId() + " | Supplier: " + po.getSupplierId()
+                                        + " | Product: " + po.getProductId() + " | Qty: " + po.getQuantity()
+                                        + " | Total: " + po.getTotalCost().getAmount() + " "
+                                        + po.getTotalCost().getCurrency()
+                                        + " | Received: " + (po.isReceived() ? "Yes" : "No"));
+                }
+        }
+
+        private static void inventoryViewAllSuppliers() {
+                Collection<Supplier> suppliers = supplierRepository.findAll();
+                if (suppliers.isEmpty()) {
+                        System.out.println("No suppliers found.");
+                        return;
+                }
+                System.out.println("\n--- All Suppliers ---");
+                for (Supplier s : suppliers) {
+                        System.out.println("- ID: " + s.getSupplierId() + " | Name: " + s.getSupplierName()
+                                        + " | Contact: " + s.getContactName() + " | Email: " + s.getContactEmail()
+                                        + " | Phone: " + s.getContactPhone());
+                        if (s.getAddress() != null) {
+                                System.out.println("  Address: " + s.getAddress().getStreet() + ", "
+                                                + s.getAddress().getCity() + ", " + s.getAddress().getZone());
+                        }
+                }
+        }
+
         private static void inventoryFetchSupplierFromErp() {
                 String supplierId = readString("Supplier ID (ERP): ");
                 supplierController.importFromErp(supplierId);
@@ -719,40 +780,6 @@ public class Main {
                 System.out.println("Product updated.");
         }
 
-        private static void inventoryViewAllPurchaseOrders() {
-                Collection<PurchaseOrder> pos = purchaseOrderRepository.findAll();
-                if (pos.isEmpty()) {
-                        System.out.println("No purchase orders found.");
-                        return;
-                }
-                System.out.println("\n--- All Purchase Orders ---");
-                for (PurchaseOrder po : pos) {
-                        System.out.println("- PO ID: " + po.getPurchaseOrderId() + " | Supplier: " + po.getSupplierId()
-                                        + " | Product: " + po.getProductId() + " | Qty: " + po.getQuantity()
-                                        + " | Total: " + po.getTotalCost().getAmount() + " "
-                                        + po.getTotalCost().getCurrency()
-                                        + " | Received: " + (po.isReceived() ? "Yes" : "No"));
-                }
-        }
-
-        private static void inventoryViewAllSuppliers() {
-                Collection<Supplier> suppliers = supplierRepository.findAll();
-                if (suppliers.isEmpty()) {
-                        System.out.println("No suppliers found.");
-                        return;
-                }
-                System.out.println("\n--- All Suppliers ---");
-                for (Supplier s : suppliers) {
-                        System.out.println("- ID: " + s.getSupplierId() + " | Name: " + s.getSupplierName()
-                                        + " | Contact: " + s.getContactName() + " | Email: " + s.getContactEmail()
-                                        + " | Phone: " + s.getContactPhone());
-                        if (s.getAddress() != null) {
-                                System.out.println("  Address: " + s.getAddress().getStreet() + ", "
-                                                + s.getAddress().getCity() + ", " + s.getAddress().getZone());
-                        }
-                }
-        }
-
         private static void inventoryCreateDecoratedLowStockAlert() {
                 String productId = readString("Enter Product ID for low stock alert: ");
                 String alertId = "ALT-LOW-DEC-" + productId + "-" + System.currentTimeMillis();
@@ -761,7 +788,8 @@ public class Main {
                 SystemAlert decoratedAlert = new RetryingAlert(
                                 new EscalatingAlert(
                                                 new LoggedAlert(
-                                                                inventoryAlertController.processAlert(alertId, productId))),
+                                                                inventoryAlertController.processAlert(alertId,
+                                                                                productId))),
                                 3);
                 knownAlertIds.add(decoratedAlert.getAlertId());
                 System.out.println("Triggering decorated alert notification...");
@@ -769,6 +797,7 @@ public class Main {
                 System.out.println("Decorated low stock alert created and triggered successfully.");
         }
 
+        // ==================== Orders & Payments ====================
         private static void ordersPaymentsMenu() {
                 boolean running = true;
                 while (running) {
@@ -933,6 +962,7 @@ public class Main {
                 }
         }
 
+        // ==================== Reports ====================
         private static void reportsMenu() {
                 boolean running = true;
                 while (running) {
@@ -969,24 +999,359 @@ public class Main {
                 reportController.generateReport(factory, reportId);
         }
 
-                //old main testing 
-       
-
-        private static void showKnownAlerts() {
-                if (knownAlertIds.isEmpty()) {
-                        System.out.println("No alerts recorded in this session.");
-                        return;
-                }
-                System.out.println("Alerts:");
-                for (String alertId : knownAlertIds) {
-                        SystemAlert a = alertRepository.findById(alertId);
-                        if (a == null) {
-                                continue;
-                        }
-                        System.out.println("- " + a.getAlertId() + " | Severity: " + a.getSeverity() + " | Resolved: "
-                                        + a.isResolved() + " | CreatedAt: " + a.getFormattedCreatedAt());
-                }
+        // ==================== Demo suite ====================
+        private static void runDemoSuite() {
+                testSingleton();
+                testAlertSystem();
+                testReportSystem();
+                testCustomerOperations();
+                testInventoryAndProducts();
+                testPaymentSystem();
+                testAdapterPattern();
+                testBridgePatternCommunication();
+                testComplaintSystem();
+                testOrderFulfillmentMediator();
+                testDecoratorPatternDelivery();
         }
+
+        private static void testSingleton() {
+                System.out.println("========== Testing Singleton Pattern ==========");
+
+                DatabaseConnectionManager db1 = DatabaseConnectionManager.getInstance();
+                DatabaseConnectionManager db2 = DatabaseConnectionManager.getInstance();
+
+                db1.connect();
+                if (db1 == db2) {
+                        System.out.println("Singleton works! Both references point to the same instance.");
+                } else {
+                        System.out.println("Singleton failed! Instances are different.");
+                }
+                db1.disconnect();
+
+                System.out.println();
+        }
+
+        // 2 + 7. ALERT SYSTEM (Factory Method & Decorator Patterns)
+        private static void testAlertSystem() {
+                System.out.println("========== Testing Alert System  ==========");
+                AlertRepository alertRepo = new AlertRepository();
+                InventoryAlertController inventoryAlertCtrl = new InventoryAlertController(alertRepo);
+
+                System.out.println("--- Demo 1: Factory Method Alert ---");
+                SystemAlert rawAlert = inventoryAlertCtrl.processAlert("ALT-001", sharedProduct.getProductId());
+                System.out.println("Alert created via Factory: " + rawAlert.getClass().getSimpleName());
+
+                System.out.println("\n--- Demo 2: Decorated Alert (Logging + Escalation + Retry) ---");
+                SystemAlert decoratedSla = new RetryingAlert(
+                                new EscalatingAlert(
+                                                new LoggedAlert(
+                                                                new SlaBreachAlertController(alertRepo)
+                                                                                .processAlert("ALT-D03", "CMP-7"))),
+                                3);
+                decoratedSla.notifyTarget();
+                System.out.println();
+        }
+
+        // 5 + 10. REPORT SYSTEM (Factory Method & Bridge Patterns)
+        private static void testReportSystem() {
+                System.out.println("========== Testing Report System (Factory & Bridge) ==========");
+                ReportController reportController = new ReportController();
+
+                // Showcasing Bridge via Factory
+                ReportGenerator factory = new CustomerReportGenerator(new ConsoleReportRenderer());
+                Report report = reportController.generateReport(factory, "RPT-202");
+                System.out.println("Report [" + report.getReportId() + "] generated using Console Renderer.");
+                report.generate();
+
+                System.out.println("\n--- Switching Renderer to CSV ---");
+                Report csvReport = new OrderReport("RPT-ORD-02", new CsvReportRenderer());
+                csvReport.generate();
+
+                System.out.println("======================================================");
+        }
+
+        // 3 + 13. CUSTOMER OPERATIONS (Abstract Factory & Segmentation)
+        private static void testCustomerOperations() {
+                System.out.println("========== Testing Customer Operations (Communication & Segmentation) ==========");
+
+                // --- Part 1: Customer Controller ---
+                CustomerRepository customerRepo = new CustomerRepository();
+                CustomerController customerCtrl = new CustomerController(customerRepo);
+                customerCtrl.createCustomer(sharedCustomer.getCustomerId(), sharedCustomer);
+                System.out.println("Customer [" + sharedCustomer.getName() + "] managed via CustomerController.");
+
+                // --- Part 2: Segmentation ---
+                CustomerSegment vipSegment = new CustomerSegment("SEG-01", "VIP Customers", "High lifetime value");
+                new CustomerSegmentMembership("MEM-001", sharedCustomer.getCustomerId(), vipSegment.getSegmentId());
+                System.out.println("Customer [" + sharedCustomer.getName() + "] assigned to segment: "
+                                + vipSegment.getName());
+
+                // --- Part 3: Communication (Abstract Factory) ---
+                CommunicationChannelProvider SmsChannelProvider = new SmsChannelProvider();
+                CommunicationController commController = new CommunicationController();
+
+                System.out.println("\n--- Communication: Employee -> Customer via SMS ---");
+                commController.sendMessageFromEmployeeToCustomer(sharedEmployee, sharedCustomer,
+                                "Hello " + sharedCustomer.getName() + ", account SEG-01 is ready!", SmsChannelProvider);
+
+                System.out.println();
+        } // 9. DECORATOR PATTERN & ORDER CONTROLLER
+
+        // INVENTORY & PRODUCT SYSTEM (Flyweight, Controller, Records)
+        private static void testInventoryAndProducts() {
+                System.out.println("========== Testing Inventory & Product System (Flyweight & Records) ==========");
+
+                // Part 1: Flyweight
+                System.out.println("--- Flyweight Pattern ---");
+                Product p1 = ProductCreator.getOrCreate(sharedProduct.getProductId(), "Mouse", "Recycled",
+                                new Money(10.0, "USD"), 10, sharedSupplierId);
+                if (p1 == sharedProduct) {
+                        System.out.println("Flyweight verified: Reused existing product object.");
+                }
+                Product p2 = ProductCreator.getOrCreate(sharedProduct2.getProductId(), "Keyboard", "Recycled",
+                                new Money(10.0, "USD"), 10, sharedSupplierId);
+                if (p2 == sharedProduct2) {
+                        System.out.println("Flyweight verified: Reused existing product object.");
+                }
+
+                // Part 2: Product & Inventory Controllers
+                System.out.println("\n--- Product & Inventory Management Controllers ---");
+                ProductRepository productRepo = new ProductRepository();
+                ProductController productCtrl = new ProductController(productRepo);
+                productCtrl.createProduct(sharedProduct2);
+
+                InventoryRecordRepository invRepo = new InventoryRecordRepository();
+                InventoryController invCtrl = new InventoryController(invRepo);
+
+                InventoryRecord record = new InventoryRecord("REC-X", sharedProduct2.getProductId(), "Zayed Warehouse",
+                                50, 10);
+                invCtrl.createInventoryRecord(record);
+
+                System.out.println("Inventory tracking active for: " + sharedProduct2.getName());
+                System.out.println("Initial Stock: " + sharedProduct2.getStockQuantity() + " | Reorder at: "
+                                + record.getReorderLevel());
+
+                // ---------------------------------------------------------
+                // Observer registration — wire up automatic notifications.
+                // InventoryAlertController creates a LowStockAlert on every
+                // deduction; SupplierController raises an auto-reorder PO
+                // when the quantity hits 0. Both happen without any manual
+                // isBelowReorderLevel() check in the caller.
+                // ---------------------------------------------------------
+                AlertRepository alertRepo = new AlertRepository();
+                InventoryAlertController alertCtrl = new InventoryAlertController(alertRepo);
+
+                SupplierRepository supplierRepo2 = new SupplierRepository();
+                PurchaseOrderRepository poRepo2 = new PurchaseOrderRepository();
+                SupplierController supplierCtrl2 = new SupplierController(supplierRepo2, null, poRepo2);
+
+                InventoryEventManager eventMgr = InventoryEventManager.getInstance();
+                eventMgr.register(alertCtrl);
+                eventMgr.register(supplierCtrl2);
+                eventMgr.register(invCtrl); // Add InventoryController as an observer
+
+                // Deducting stock — observers notified automatically
+                System.out.println("\n--- Simulating Sales to Trigger Alert ---");
+                productCtrl.deductStock(sharedProduct2.getProductId(), 45); // Using ProductController
+                // The warehouse record (REC-X) is now automatically synced by
+                // InventoryController's onStockChanged!
+
+                System.out.println("Current Stock Quantity: " + sharedProduct2.getStockQuantity());
+                System.out.println("Inventory Record Available: " + record.getAvailableQuantity());
+
+                // Clean up so other tests are not affected by these observers.
+                eventMgr.unregister(alertCtrl);
+                eventMgr.unregister(supplierCtrl2);
+                eventMgr.unregister(invCtrl);
+
+                System.out.println("======================================================");
+        }
+
+        // 4 + 8. PAYMENT SYSTEM (Abstract Factory, Adapter, & Controller)
+        private static void testPaymentSystem() {
+                System.out.println("========== Testing Payment System (Factory, Adapter, & Controller) ==========");
+
+                // Set up Controller
+                PaymentRepository payRepo = new PaymentRepository();
+                RefundRepository refundRepo = new RefundRepository();
+                PaymentController payCtrl = new PaymentController(payRepo, refundRepo);
+
+                // Demo 1: Controller using a specific Factory (CardPaymentProvider)
+                System.out.println("--- Demo 1: Standard Card Payment (Manual Factory Injection) ---");
+                PaymentTransaction transaction1 = new PaymentTransaction("TXN-001", "ORD-123", new Money(100.0, "USD"),
+                                PaymentMethodType.Card);
+                payCtrl.processPayment(transaction1, new CardPaymentProvider());
+
+                // Demo 2: Controller using internal Adapter logic (Stripe)
+                System.out.println("\n--- Demo 2: External Gateway Payment (Internal Adapter Logic) ---");
+                PaymentTransaction transaction2 = new PaymentTransaction("TXN-002", "ORD-999", new Money(50.0, "USD"),
+                                PaymentMethodType.Card);
+                // The controller will automatically use StripePaymentProvider for Card method
+                payCtrl.processPayment(transaction2, new StripePaymentProvider());
+
+                // Demo 3: Cash On Delivery
+                System.out.println("\n--- Demo 3: Cash On Delivery ---");
+                PaymentTransaction transaction3 = new PaymentTransaction("TXN-003", "ORD-555", new Money(75.0, "USD"),
+                                PaymentMethodType.CashOnDelivery);
+                payCtrl.processPayment(transaction3, new CodPaymentProvider());
+
+                System.out.println("======================================================");
+        }
+
+        // 6. ADAPTER PATTERN — ErpSupplierAdapter + SupplierController
+        private static void testAdapterPattern() {
+                System.out.println("========== Testing Adapter Pattern (ERP Integration) ==========");
+
+                SupplierRepository supplierRepo = new SupplierRepository();
+                PurchaseOrderRepository poRepo = new PurchaseOrderRepository();
+                SupplierDataService adapter = new ErpSupplierConnector();
+                ProductRepository repo = new ProductRepository();
+
+                // Full constructor: supplier repo + ERP adapter + PO repo
+                SupplierController controller = new SupplierController(supplierRepo, adapter, poRepo);
+
+                System.out.println("--- Supplier Operations ---");
+                // Import supplier from ERP → saved into CRM supplier repo
+                controller.importFromErp(sharedSupplierId);
+                // Export supplier back to ERP
+                controller.exportToErp(sharedSupplierId);
+
+                System.out.println("\n--- Purchase Order Operations ---");
+                // Import PO from ERP → saved into CRM PO repo
+                controller.importPoFromErp("PO-101");
+                // Export PO from CRM repo → pushed to ERP
+                PurchaseOrderController Pocontroller = new PurchaseOrderController(poRepo, repo);
+                PurchaseOrder po = new PurchaseOrder("PO-102", sharedSupplierId, sharedProduct4.getProductId(), 10,
+                                new Money(1500.0, "USD"));
+                Pocontroller.createPurchaseOrder(po);
+                controller.exportPoToErp(po.getPurchaseOrderId());
+
+                System.out.println("======================================================");
+        }
+
+        // 11. BRIDGE PATTERN — Communication Channels
+        private static void testBridgePatternCommunication() {
+                System.out.println("========== Testing Bridge Pattern (Communication) ==========");
+
+                // SMS Bridge
+                System.out.println("--- Sending via SMS Channel ---");
+                Notification smsNotif = new ChannelNotification("Urgent Update", new SMSChannel());
+                smsNotif.send();
+
+                // Email Bridge
+                System.out.println("\n--- Sending via Email Channel ---");
+                Notification emailNotif = new ChannelNotification("Weekly Newsletter", new EmailChannel());
+                emailNotif.send();
+
+                System.out.println("======================================================");
+        }
+
+        private static void testComplaintSystem() {
+                System.out.println("========== Testing Complaint System (Controller & SLA Checks) ==========");
+                ComplaintRepository complaintRepo = new ComplaintRepository();
+                ComplaintController complaintCtrl = new ComplaintController(complaintRepo);
+                SlaBreachAlertController alertCtrl = new SlaBreachAlertController(new AlertRepository());
+                CommunicationController commCtrl = new CommunicationController();
+                ComplaintEscalationHandler mediator = new ComplaintEscalationHandlerService(complaintCtrl, alertCtrl,
+                                commCtrl);
+                complaintCtrl.setMediator(mediator);
+
+                Complaint complaint = new Complaint("CMP-001", "High Priority",
+                                new com.crm.customer.SlaCalculator.StandardSlaCalculator());
+                complaintCtrl.createComplaint(complaint);
+                System.out.println("Complaint CMP-001 created for Customer [" + sharedCustomer.getName() + "]");
+                System.out.println("Priority: " + complaint.getPriority());
+
+                CommunicationChannelProvider commProvider = new SmsChannelProvider();
+
+                System.out.println("\n--- 1. Attempt Breach Check (No breach yet) ---");
+                // Will hit the early return block since it's just created!
+                complaintCtrl.detectSlaBreach(complaint, sharedCustomer, sharedEmployee, commProvider);
+
+                System.out.println("\n--- 2. Simulating Time Passing -> Real SLA Breach ---");
+                // Cheat the clock backwards by 72 hours
+                complaint.setSlaDeadline(java.time.LocalDateTime.now().minusHours(72));
+                // Will now successfully breach and call the mediator
+                complaintCtrl.detectSlaBreach(complaint, sharedCustomer, sharedEmployee, commProvider);
+
+                System.out.println("\n--- 3. Testing Resolved Status ---");
+                // If it's resolved, it should not escalate again
+                complaint.updateStatus(com.crm.common.enums.ComplaintStatus.Resolved);
+                complaintCtrl.detectSlaBreach(complaint, sharedCustomer, sharedEmployee, commProvider);
+
+                System.out.println("======================================================");
+        }
+
+        private static void testOrderFulfillmentMediator() {
+                System.out.println("========== Testing Order Fulfillment Mediator (Checkout Hub) ==========");
+
+                OrderRepository orderRepo = new OrderRepository();
+                OrderController orderCtrl = new OrderController(orderRepo);
+
+                PaymentRepository payRepo = new PaymentRepository();
+                RefundRepository refundRepo = new RefundRepository();
+                PaymentController payCtrl = new PaymentController(payRepo, refundRepo);
+
+                ProductRepository prodRepo = new ProductRepository();
+                ProductController prodCtrl = new ProductController(prodRepo);
+
+                CommunicationController commCtrl = new CommunicationController();
+
+                OrderFulfillment mediator = new OrderFulfillment(orderCtrl, payCtrl, prodCtrl,
+                                commCtrl);
+
+                Order order = new Order("ORD-MED-01", sharedCustomer.getCustomerId());
+                order.addItem(new OrderItem("ITM-001", sharedProduct, 1, new Money(149.99, "EGP")));
+                orderCtrl.createOrder(order);
+
+                PaymentTransaction pTx = new PaymentTransaction("TXN-MED-01", order.getOrderId(),
+                                order.getTotalAmount(), PaymentMethodType.Card);
+                Address delAddress = new Address("789 Boulevard", "Cairo", "Heliopolis");
+                Delivery delivery = new Delivery("DEL-MED-01", order.getOrderId(), delAddress,
+                                java.time.LocalDateTime.now().plusDays(2));
+
+                CommunicationChannelProvider SmsChannelProvider = new SmsChannelProvider();
+
+                mediator.processCheckout(order, pTx, sharedCustomer, delivery, new StripePaymentProvider(),
+                                SmsChannelProvider);
+
+                System.out.println("======================================================");
+
+        }
+
+        private static void testDecoratorPatternDelivery() {
+                System.out.println("========== Testing Decorator Pattern & Order Controller ==========");
+
+                // Set up Order and Controller
+                OrderRepository orderRepo = new OrderRepository();
+                OrderController orderCtrl = new OrderController(orderRepo);
+                Order order = new Order("ORD-123", sharedCustomer.getCustomerId());
+                orderCtrl.createOrder(order);
+
+                // Base delivery object
+                Address delAddress = new Address("123 Street", "Cairo", "Zamalek");
+                LocalDateTime delEta = LocalDateTime.now().plusDays(3);
+                Delivery baseDelivery = new Delivery("DEL-777", order.getOrderId(), delAddress, delEta);
+                orderCtrl.attachDelivery(order.getOrderId(), baseDelivery);
+
+                System.out.println("--- Initial State via Controller ---");
+                System.out.println("Delivery tied to Order [" + order.getOrderId() + "] Status: "
+                                + baseDelivery.getDeliveryStatus());
+
+                // Wrap with Logging + Notifying + Alerting
+                System.out.println("\n--- Decorated State (Logging + Notifying + Alerting) ---");
+                Delivery decoratedDelivery = new AlertingDelivery(
+                                new NotifyingDelivery(
+                                                new LoggedDelivery(baseDelivery)));
+
+                decoratedDelivery.markOnTheWay();
+                decoratedDelivery.markDelayed(); // Should trigger alert + log + notify
+                decoratedDelivery.markDelivered(); // Should log + notify
+
+                System.out.println("======================================================");
+        }
+
+        // Backup testing
 
         private static SlaCalculator selectSlaStrategy() {
                 System.out.println("SLA Strategy:");
@@ -1076,7 +1441,7 @@ public class Main {
                 return input == null ? "" : input.trim();
         }
 
-        //old main 
+        // old main
         private static void setupSharedObjects() {
                 sharedCustomer = new Customer("CUST-001", "Jane Doe", "jane@example.com", "123-456-7890");
                 sharedEmployee = new Employee("EMP-001", "John Smith", "Support Agent", "john.smith@crm.com");
@@ -1087,356 +1452,5 @@ public class Main {
                                 "Ergonomic wireless mouse", pPrice, 20, sharedSupplierId);
                 sharedProduct2 = ProductCreator.getOrCreate("PROD-02", "Wireless Keyboard",
                                 "Ergonomic wireless keyboard", pPrice2, 21, sharedSupplierId);
-        }
-        
-         private static void runDemoSuite() {
-                testSingleton();
-                testAlertSystem();
-                testReportSystem();
-                testCustomerOperations();
-                testInventoryAndProducts();
-                testPaymentSystem();
-                testAdapterPattern();
-                testBridgePatternCommunication();
-                testComplaintSystem();
-                testOrderFulfillmentMediator();
-                testDecoratorPatternDelivery();
-        }
-
-        private static void testSingleton() {
-                System.out.println("========== Testing Singleton Pattern ==========");
-
-                DatabaseConnectionManager db1 = DatabaseConnectionManager.getInstance();
-                DatabaseConnectionManager db2 = DatabaseConnectionManager.getInstance();
-
-                db1.connect();
-                if (db1 == db2) {
-                        System.out.println("Singleton works! Both references point to the same instance.");
-                } else {
-                        System.out.println("Singleton failed! Instances are different.");
-                }
-                db1.disconnect();
-
-                System.out.println();
-        }
-
-        // 2 + 7. ALERT SYSTEM (Factory Method & Decorator Patterns)
-        private static void testAlertSystem() {
-                System.out.println("========== Testing Alert System (Factory & Decorator) ==========");
-                AlertRepository alertRepo = new AlertRepository();
-                InventoryAlertController inventoryAlertCtrl = new InventoryAlertController(alertRepo);
-
-                System.out.println("--- Demo 1: Factory Method Alert ---");
-                SystemAlert rawAlert = inventoryAlertCtrl.processAlert("ALT-001", sharedProduct.getProductId());
-                System.out.println("Alert created via Factory: " + rawAlert.getClass().getSimpleName());
-
-                System.out.println("\n--- Demo 2: Decorated Alert (Logging + Escalation + Retry) ---");
-                SystemAlert decoratedSla = new RetryingAlert(
-                                new EscalatingAlert(
-                                                new LoggedAlert(
-                                                                new SlaBreachAlertController(alertRepo)
-                                                                                .processAlert("ALT-D03", "CMP-7"))),
-                                3);
-                decoratedSla.notifyTarget();
-                System.out.println();
-        }
-
-        // 3 + 13. CUSTOMER OPERATIONS (Abstract Factory & Segmentation)
-        private static void testCustomerOperations() {
-                System.out.println("========== Testing Customer Operations (Communication & Segmentation) ==========");
-
-                // --- Part 1: Customer Controller ---
-                CustomerRepository customerRepo = new CustomerRepository();
-                CustomerController customerCtrl = new CustomerController(customerRepo);
-                customerCtrl.createCustomer(sharedCustomer.getCustomerId(), sharedCustomer);
-                System.out.println("Customer [" + sharedCustomer.getName() + "] managed via CustomerController.");
-
-                // --- Part 2: Segmentation ---
-                CustomerSegment vipSegment = new CustomerSegment("SEG-01", "VIP Customers", "High lifetime value");
-                new CustomerSegmentMembership("MEM-001", sharedCustomer.getCustomerId(), vipSegment.getSegmentId());
-                System.out.println("Customer [" + sharedCustomer.getName() + "] assigned to segment: "
-                                + vipSegment.getName());
-
-                // --- Part 3: Communication (Abstract Factory) ---
-                CommunicationChannelProvider SmsChannelProvider = new SmsChannelProvider();
-                CommunicationController commController = new CommunicationController();
-
-                System.out.println("\n--- Communication: Employee -> Customer via SMS ---");
-                commController.sendMessageFromEmployeeToCustomer(sharedEmployee, sharedCustomer,
-                                "Hello " + sharedCustomer.getName() + ", account SEG-01 is ready!", SmsChannelProvider);
-
-                System.out.println();
-        } // 9. DECORATOR PATTERN & ORDER CONTROLLER
-
-        private static void testDecoratorPatternDelivery() {
-                System.out.println("========== Testing Decorator Pattern & Order Controller ==========");
-
-                // Set up Order and Controller
-                OrderRepository orderRepo = new OrderRepository();
-                OrderController orderCtrl = new OrderController(orderRepo);
-                Order order = new Order("ORD-123", sharedCustomer.getCustomerId());
-                orderCtrl.createOrder(order);
-
-                // Base delivery object
-                Address delAddress = new Address("123 Street", "Cairo", "Zamalek");
-                LocalDateTime delEta = LocalDateTime.now().plusDays(3);
-                Delivery baseDelivery = new Delivery("DEL-777", order.getOrderId(), delAddress, delEta);
-                orderCtrl.attachDelivery(order.getOrderId(), baseDelivery);
-
-                System.out.println("--- Initial State via Controller ---");
-                System.out.println("Delivery tied to Order [" + order.getOrderId() + "] Status: "
-                                + baseDelivery.getDeliveryStatus());
-
-                // Wrap with Logging + Notifying + Alerting
-                System.out.println("\n--- Decorated State (Logging + Notifying + Alerting) ---");
-                Delivery decoratedDelivery = new AlertingDelivery(
-                                new NotifyingDelivery(
-                                                new LoggedDelivery(baseDelivery)));
-
-                decoratedDelivery.markOnTheWay();
-                decoratedDelivery.markDelayed(); // Should trigger alert + log + notify
-                decoratedDelivery.markDelivered(); // Should log + notify
-
-                System.out.println("======================================================");
-        }
-
-        // 4 + 8. PAYMENT SYSTEM (Abstract Factory, Adapter, & Controller)
-        private static void testPaymentSystem() {
-                System.out.println("========== Testing Payment System (Factory, Adapter, & Controller) ==========");
-
-                // Set up Controller
-                PaymentRepository payRepo = new PaymentRepository();
-                RefundRepository refundRepo = new RefundRepository();
-                PaymentController payCtrl = new PaymentController(payRepo, refundRepo);
-
-                // Demo 1: Controller using a specific Factory (CardPaymentProvider)
-                System.out.println("--- Demo 1: Standard Card Payment (Manual Factory Injection) ---");
-                PaymentTransaction transaction1 = new PaymentTransaction("TXN-001", "ORD-123", new Money(100.0, "USD"),
-                                PaymentMethodType.Card);
-                payCtrl.processPayment(transaction1, new CardPaymentProvider());
-
-                // Demo 2: Controller using internal Adapter logic (Stripe)
-                System.out.println("\n--- Demo 2: External Gateway Payment (Internal Adapter Logic) ---");
-                PaymentTransaction transaction2 = new PaymentTransaction("TXN-002", "ORD-999", new Money(50.0, "USD"),
-                                PaymentMethodType.Card);
-                // The controller will automatically use StripePaymentProvider for Card method
-                payCtrl.processPayment(transaction2, new StripePaymentProvider());
-
-                // Demo 3: Cash On Delivery
-                System.out.println("\n--- Demo 3: Cash On Delivery ---");
-                PaymentTransaction transaction3 = new PaymentTransaction("TXN-003", "ORD-555", new Money(75.0, "USD"),
-                                PaymentMethodType.CashOnDelivery);
-                payCtrl.processPayment(transaction3, new CodPaymentProvider());
-
-                System.out.println("======================================================");
-        }
-
-        // 5 + 10. REPORT SYSTEM (Factory Method & Bridge Patterns)
-        private static void testReportSystem() {
-                System.out.println("========== Testing Report System (Factory & Bridge) ==========");
-                ReportController reportController = new ReportController();
-
-                // Showcasing Bridge via Factory
-                ReportGenerator factory = new CustomerReportGenerator(new ConsoleReportRenderer());
-                Report report = reportController.generateReport(factory, "RPT-202");
-                System.out.println("Report [" + report.getReportId() + "] generated using Console Renderer.");
-                report.generate();
-
-                System.out.println("\n--- Switching Renderer to CSV ---");
-                Report csvReport = new OrderReport("RPT-ORD-02", new CsvReportRenderer());
-                csvReport.generate();
-
-                System.out.println("======================================================");
-        }
-
-        // 6. ADAPTER PATTERN — ErpSupplierAdapter + SupplierController
-        private static void testAdapterPattern() {
-                System.out.println("========== Testing Adapter Pattern (ERP Integration) ==========");
-
-                SupplierRepository supplierRepo = new SupplierRepository();
-                PurchaseOrderRepository poRepo = new PurchaseOrderRepository();
-                SupplierDataService adapter = new ErpSupplierConnector();
-                ProductRepository repo = new ProductRepository();
-
-                // Full constructor: supplier repo + ERP adapter + PO repo
-                SupplierController controller = new SupplierController(supplierRepo, adapter, poRepo);
-
-                System.out.println("--- Supplier Operations ---");
-                // Import supplier from ERP → saved into CRM supplier repo
-                controller.importFromErp(sharedSupplierId);
-                // Export supplier back to ERP
-                controller.exportToErp(sharedSupplierId);
-
-                System.out.println("\n--- Purchase Order Operations ---");
-                // Import PO from ERP → saved into CRM PO repo
-                controller.importPoFromErp("PO-101");
-                // Export PO from CRM repo → pushed to ERP
-                PurchaseOrderController Pocontroller = new PurchaseOrderController(poRepo, repo);
-                PurchaseOrder po = new PurchaseOrder("PO-102", sharedSupplierId, sharedProduct4.getProductId(), 10,
-                                new Money(1500.0, "USD"));
-                Pocontroller.createPurchaseOrder(po);
-                controller.exportPoToErp(po.getPurchaseOrderId());
-
-                System.out.println("======================================================");
-        }
-
-        // 11. BRIDGE PATTERN — Communication Channels
-        private static void testBridgePatternCommunication() {
-                System.out.println("========== Testing Bridge Pattern (Communication) ==========");
-
-                // SMS Bridge
-                System.out.println("--- Sending via SMS Channel ---");
-                Notification smsNotif = new ChannelNotification("Urgent Update", new SMSChannel());
-                smsNotif.send();
-
-                // Email Bridge
-                System.out.println("\n--- Sending via Email Channel ---");
-                Notification emailNotif = new ChannelNotification("Weekly Newsletter", new EmailChannel());
-                emailNotif.send();
-
-                System.out.println("======================================================");
-        }
-
-        //  INVENTORY & PRODUCT SYSTEM (Flyweight, Controller, Records)
-        private static void testInventoryAndProducts() {
-                System.out.println("========== Testing Inventory & Product System (Flyweight & Records) ==========");
-
-                // Part 1: Flyweight
-                System.out.println("--- Flyweight Pattern ---");
-                Product p1 = ProductCreator.getOrCreate(sharedProduct.getProductId(), "Mouse", "Recycled",
-                                new Money(10.0, "USD"), 10, sharedSupplierId);
-                if (p1 == sharedProduct) {
-                        System.out.println("Flyweight verified: Reused existing product object.");
-                }
-                Product p2 = ProductCreator.getOrCreate(sharedProduct2.getProductId(), "Keyboard", "Recycled",
-                                new Money(10.0, "USD"), 10, sharedSupplierId);
-                if (p2 == sharedProduct2) {
-                        System.out.println("Flyweight verified: Reused existing product object.");
-                }
-
-                // Part 2: Product & Inventory Controllers
-                System.out.println("\n--- Product & Inventory Management Controllers ---");
-                ProductRepository productRepo = new ProductRepository();
-                ProductController productCtrl = new ProductController(productRepo);
-                productCtrl.createProduct(sharedProduct2);
-
-                InventoryRecordRepository invRepo = new InventoryRecordRepository();
-                InventoryController invCtrl = new InventoryController(invRepo);
-
-                InventoryRecord record = new InventoryRecord("REC-X", sharedProduct2.getProductId(), "Zayed Warehouse",
-                                50, 10);
-                invCtrl.createInventoryRecord(record);
-
-                System.out.println("Inventory tracking active for: " + sharedProduct2.getName());
-                System.out.println("Initial Stock: " + sharedProduct2.getStockQuantity() + " | Reorder at: "
-                                + record.getReorderLevel());
-
-                // ---------------------------------------------------------
-                // Observer registration — wire up automatic notifications.
-                // InventoryAlertController creates a LowStockAlert on every
-                // deduction; SupplierController raises an auto-reorder PO
-                // when the quantity hits 0. Both happen without any manual
-                // isBelowReorderLevel() check in the caller.
-                // ---------------------------------------------------------
-                AlertRepository alertRepo = new AlertRepository();
-                InventoryAlertController alertCtrl = new InventoryAlertController(alertRepo);
-
-                SupplierRepository supplierRepo2 = new SupplierRepository();
-                PurchaseOrderRepository poRepo2 = new PurchaseOrderRepository();
-                SupplierController supplierCtrl2 = new SupplierController(supplierRepo2, null, poRepo2);
-
-                InventoryEventManager eventMgr = InventoryEventManager.getInstance();
-                eventMgr.register(alertCtrl);
-                eventMgr.register(supplierCtrl2);
-                eventMgr.register(invCtrl); // Add InventoryController as an observer
-
-                // Deducting stock — observers notified automatically
-                System.out.println("\n--- Simulating Sales to Trigger Alert ---");
-                productCtrl.deductStock(sharedProduct2.getProductId(), 45); // Using ProductController
-                // The warehouse record (REC-X) is now automatically synced by
-                // InventoryController's onStockChanged!
-
-                System.out.println("Current Stock Quantity: " + sharedProduct2.getStockQuantity());
-                System.out.println("Inventory Record Available: " + record.getAvailableQuantity());
-
-                // Clean up so other tests are not affected by these observers.
-                eventMgr.unregister(alertCtrl);
-                eventMgr.unregister(supplierCtrl2);
-                eventMgr.unregister(invCtrl);
-
-                System.out.println("======================================================");
-        }
-
-        private static void testComplaintSystem() {
-                System.out.println("========== Testing Complaint System (Controller & SLA Checks) ==========");
-                ComplaintRepository complaintRepo = new ComplaintRepository();
-                ComplaintController complaintCtrl = new ComplaintController(complaintRepo);
-                SlaBreachAlertController alertCtrl = new SlaBreachAlertController(new AlertRepository());
-                CommunicationController commCtrl = new CommunicationController();
-                ComplaintEscalationHandler mediator = new ComplaintEscalationHandlerService(complaintCtrl, alertCtrl,
-                                commCtrl);
-                complaintCtrl.setMediator(mediator);
-
-                Complaint complaint = new Complaint("CMP-001", "High Priority",
-                                new com.crm.customer.SlaCalculator.StandardSlaCalculator());
-                complaintCtrl.createComplaint(complaint);
-                System.out.println("Complaint CMP-001 created for Customer [" + sharedCustomer.getName() + "]");
-                System.out.println("Priority: " + complaint.getPriority());
-
-                CommunicationChannelProvider commProvider = new SmsChannelProvider();
-
-                System.out.println("\n--- 1. Attempt Breach Check (No breach yet) ---");
-                // Will hit the early return block since it's just created!
-                complaintCtrl.detectSlaBreach(complaint, sharedCustomer, sharedEmployee, commProvider);
-
-                System.out.println("\n--- 2. Simulating Time Passing -> Real SLA Breach ---");
-                // Cheat the clock backwards by 72 hours
-                complaint.setSlaDeadline(java.time.LocalDateTime.now().minusHours(72));
-                // Will now successfully breach and call the mediator
-                complaintCtrl.detectSlaBreach(complaint, sharedCustomer, sharedEmployee, commProvider);
-
-                System.out.println("\n--- 3. Testing Resolved Status ---");
-                // If it's resolved, it should not escalate again
-                complaint.updateStatus(com.crm.common.enums.ComplaintStatus.Resolved);
-                complaintCtrl.detectSlaBreach(complaint, sharedCustomer, sharedEmployee, commProvider);
-
-                System.out.println("======================================================");
-        }
-
-        private static void testOrderFulfillmentMediator() {
-                System.out.println("========== Testing Order Fulfillment Mediator (Checkout Hub) ==========");
-
-                OrderRepository orderRepo = new OrderRepository();
-                OrderController orderCtrl = new OrderController(orderRepo);
-
-                PaymentRepository payRepo = new PaymentRepository();
-                RefundRepository refundRepo = new RefundRepository();
-                PaymentController payCtrl = new PaymentController(payRepo, refundRepo);
-
-                ProductRepository prodRepo = new ProductRepository();
-                ProductController prodCtrl = new ProductController(prodRepo);
-
-                CommunicationController commCtrl = new CommunicationController();
-
-                OrderFulfillment mediator = new OrderFulfillment(orderCtrl, payCtrl, prodCtrl,
-                                commCtrl);
-
-                Order order = new Order("ORD-MED-01", sharedCustomer.getCustomerId());
-                order.addItem(new OrderItem("ITM-001", sharedProduct, 1, new Money(149.99, "EGP")));
-                orderCtrl.createOrder(order);
-
-                PaymentTransaction pTx = new PaymentTransaction("TXN-MED-01", order.getOrderId(),
-                                order.getTotalAmount(), PaymentMethodType.Card);
-                Address delAddress = new Address("789 Boulevard", "Cairo", "Heliopolis");
-                Delivery delivery = new Delivery("DEL-MED-01", order.getOrderId(), delAddress,
-                                java.time.LocalDateTime.now().plusDays(2));
-
-                CommunicationChannelProvider SmsChannelProvider = new SmsChannelProvider();
-
-                mediator.processCheckout(order, pTx, sharedCustomer, delivery, new StripePaymentProvider(),
-                                SmsChannelProvider);
-
-                System.out.println("======================================================");
-
         }
 }
