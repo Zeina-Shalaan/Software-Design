@@ -150,5 +150,7 @@ public class SupplierController implements StockListener {
             }
             supplierDataService.pushPurchaseOrder(autoPo);
         }
+        supplierDataService.pushPurchaseOrder(po);
+        System.out.println("PO " + po.getPurchaseOrderId() + " pushed from CRM to ERP.");
     }
 }

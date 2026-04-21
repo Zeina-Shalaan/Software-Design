@@ -5,13 +5,20 @@ import com.crm.inventory.event.StockListener;
 import com.crm.inventory.model.InventoryRecord;
 import com.crm.inventory.repository.InventoryRecordRepository;
 
+import com.crm.inventory.mediator.RestockMediator;
+
 //warehouse controller
 // concrete observer
 public class InventoryController implements StockListener {
     private final InventoryRecordRepository inventoryRecordRepository;
+    private RestockMediator mediator;
 
     public InventoryController(InventoryRecordRepository inventoryRecordRepository) {
         this.inventoryRecordRepository = inventoryRecordRepository;
+    }
+
+    public void setRestockMediator(RestockMediator mediator) {
+        this.mediator = mediator;
     }
 
     public void createInventoryRecord(InventoryRecord inventoryRecord) {
@@ -38,6 +45,10 @@ public class InventoryController implements StockListener {
         }
         record.decrease(quantity);
         inventoryRecordRepository.update(recordId, record);
+
+        if (isBelowReorderLevel(recordId) && mediator != null) {
+            mediator.onLowStock(recordId, record.getProductId());
+        }
     }
 
     public boolean isBelowReorderLevel(String recordId) {
