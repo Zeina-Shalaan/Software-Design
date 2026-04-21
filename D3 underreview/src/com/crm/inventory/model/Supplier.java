@@ -14,7 +14,8 @@ public class Supplier {
     private String contactPhone;
     private Address address;
 
-    public Supplier(String supplierId, String supplierName, String contactName, String contactEmail, String contactPhone, Address address) {
+    public Supplier(String supplierId, String supplierName, String contactName, String contactEmail,
+            String contactPhone, Address address) {
         this.supplierId = supplierId;
         this.supplierName = supplierName;
         this.contactName = contactName;

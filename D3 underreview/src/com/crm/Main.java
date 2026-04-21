@@ -11,7 +11,6 @@ import com.crm.communication.channel.SMS.SMSChannel;
 
 import com.crm.communication.controller.*;
 import com.crm.communication.providers.*;
-
 import com.crm.customer.SlaCalculator.*;
 import com.crm.customer.controller.*;
 import com.crm.customer.model.*;
@@ -19,13 +18,14 @@ import com.crm.customer.policies.ActivityBasedSegmentation;
 import com.crm.customer.policies.GeographicSegmentation;
 import com.crm.customer.policies.SegmentationPolicy;
 import com.crm.customer.policies.SpendingBasedSegmentation;
-import com.crm.customer.policies.*;
 import com.crm.customer.repository.*;
 
 import com.crm.inventory.controller.*;
 
 import com.crm.inventory.event.*;
 import com.crm.inventory.model.*;
+import com.crm.inventory.model.Supplier;
+
 import com.crm.inventory.repository.*;
 import com.crm.inventory.service.*;
 import com.crm.order.controller.*;
@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.function.Supplier;
 
 public class Main {
         private static Customer sharedCustomer;
@@ -61,7 +60,7 @@ public class Main {
         private static String sharedSupplierId = "SUP-01";
 
         private static final Scanner scanner = new Scanner(System.in);
-
+        // All controllers and repos
         private static CustomerRepository customerRepository;
         private static ComplaintRepository complaintRepository;
         private static OrderRepository orderRepository;
@@ -99,6 +98,7 @@ public class Main {
                 runInteractiveConsole();
         }
 
+        // all initizallization for controllers and repos
         private static void bootstrapControllers() {
                 customerRepository = new CustomerRepository();
                 complaintRepository = new ComplaintRepository();
@@ -142,6 +142,7 @@ public class Main {
                 InventoryEventManager.getInstance().register(supplierController);
         }
 
+        // static data for testing
         private static void seedSampleData() {
                 System.out.println("[Main] Seeding sample data across all repositories...");
 
@@ -368,7 +369,7 @@ public class Main {
                         System.out.println("2) Inventory Subsystem View");
                         System.out.println("3) Orders & Payments");
                         System.out.println("4) Reports");
-                        System.out.println("5) Run Full Demo");
+                        System.out.println("5) Run Full Demo"); // old main
                         System.out.println("0) Exit");
 
                         int choice = readInt("Select an option: ");
@@ -385,6 +386,7 @@ public class Main {
                 System.out.println("Shutting down CRM console.");
         }
 
+        // shows all alerts id saved
         // ==================== Common functions ====================
         private static void showKnownAlerts() {
                 if (knownAlertIds.isEmpty()) {
